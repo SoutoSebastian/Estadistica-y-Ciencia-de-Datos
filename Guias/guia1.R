@@ -1,5 +1,9 @@
 #Práctica 1 - Estadística descriptiva.
 
+library(ggplot2)
+library(tidyr)
+
+
 ######Ejercicio 1.###########
 
 Debernardi <- read.csv(
@@ -280,4 +284,296 @@ boxplot(salchichasA[,2], salchichasB[,2],salchichasC[,2],
         col = c(rgb(0,0,1,0.5),"skyblue", "salmon"),
         main = "Sodio en salchichas de distintos tipos.",
         ylab = "Sodio")
+
+
+
+###Ejercicio 5#####
+
+estudiantes <- read.table("estudiantes.txt", header = TRUE)
+
+###a
+
+datos_grupo1 <- estudiantes[,1]
+datos_grupo2 <- estudiantes[,2]
+
+
+#Grupo 1
+
+#Uno simple:
+
+hist(datos_grupo1, 
+     freq = FALSE,           
+     col = "lightblue", 
+     border = "white",
+     main = "Histograma datos Grupo 1 con curva normal",
+     xlab = "Valores",
+     ylab = "Densidad")
+
+
+curve(dnorm(x, mean = mean(datos_grupo1), sd = sd(datos_grupo1)), 
+      col = "red", lwd = 2, add = TRUE)
+
+
+
+#Ahora uno con ggplot (Chat gpt!)
+
+# Convertir el vector en data frame (ggplot trabaja mejor con data.frames)
+df1 <- data.frame(x = datos_grupo1)
+
+# Histograma + curva normal
+ggplot(df1, aes(x = x)) +
+  geom_histogram(aes(y = ..density..), 
+                 bins = 8,           # podés cambiar el número de bins
+                 fill = "lightblue", 
+                 color = "white") +
+  stat_function(fun = dnorm, 
+                args = list(mean = mean(df1$x), sd = sd(df1$x)), 
+                color = "red", size = 1.2) +
+  labs(title = "Histograma datos Grupo 1 con curva normal",
+       x = "Valores", 
+       y = "Densidad") +
+  theme_minimal()
+
+
+
+
+#Grupo 2
+
+df2 <- data.frame(x = datos_grupo2)
+
+ggplot(df2, aes(x = x)) +
+  geom_histogram(aes(y = ..density..), 
+                 bins = 8,           
+                 fill = "salmon", 
+                 color = "white") +
+  stat_function(fun = dnorm, 
+                args = list(mean = mean(df2$x), sd = sd(df2$x)), 
+                color = "red", size = 1.2) +
+  labs(title = "Histograma datos Grupo 1 con curva normal",
+       x = "Valores", 
+       y = "Densidad") +
+  theme_minimal()
+
+
+
+#QQ-PLOTS
+
+#Grupo 1
+
+qqnorm(datos_grupo1, 
+       main = "QQ-plot Grupo 1",
+       col = "blue", pch = 19)   # puntos en azul
+qqline(datos_grupo1, 
+       col = "red", lwd = 2)     # recta en rojo
+
+#Uno con gg-plot
+
+
+ggplot(df1, aes(sample = x)) +
+  stat_qq(color = "blue", size = 2) +           
+  stat_qq_line(color = "red", lwd = 1.2) +     
+  labs(title = "QQ-plot Grupo 1",
+       x = "Cuantiles teóricos",
+       y = "Cuantiles muestrales") +
+  theme_minimal()
+
+#Grupo 2
+
+ggplot(df2, aes(sample = x)) +
+  stat_qq(color = "blue", size = 2) +           
+  stat_qq_line(color = "red", lwd = 1.2) +     
+  labs(title = "QQ-plot Grupo 2",
+       x = "Cuantiles teóricos",
+       y = "Cuantiles muestrales") +
+  theme_minimal()
+
+#Analisis:En los histogramas se puede ver una cierta correlacion entre la curva normal y los datos
+#Sin embargo, por el qqplot, se puede observar que los datos del grupo 2 se asemejan a una normal,
+#mientras que los datos del grupo 2 no. 
+
+
+###b
+summary(datos_grupo1)
+summary(datos_grupo2)
+sd(datos_grupo1)
+sd(datos_grupo2)
+
+#A partir de esto parece que los dos grupos estan midiendo cosas distintas. Los valores del grupo
+#2 son mayores y varian mas. 
+
+#Boxplots (gg-plot)
+
+# Convertir a formato largo
+df_long <- estudiantes %>%
+  pivot_longer(cols = c(GRUPO1, GRUPO2),
+               names_to = "grupo",
+               values_to = "valor")
+
+# Boxplots paralelos
+ggplot(df_long, aes(x = grupo, y = valor, fill = grupo)) +
+  geom_boxplot() +
+  labs(title = "Boxplots paralelos de Grupo 1 y Grupo 2",
+       x = "Grupo",
+       y = "Valores") +
+  scale_fill_manual(values = c("salmon", "lightblue")) +
+  theme_minimal()
+
+
+
+######Ejercicio 6########
+
+nubes <- read.table("nubes.txt", header = TRUE)
+
+###a
+
+df_nubes <- nubes %>%
+  pivot_longer(cols = c(CONTROLES, TRATADAS),
+               names_to = "tipoNube",
+               values_to = "agua")
+
+ggplot(df_nubes, aes(x = tipoNube, y = agua, fill = tipoNube)) +
+  geom_boxplot() +
+  labs(title = "Boxplots paralelos nubes controladas y tratadas",
+       x = "Tipo nube",
+       y = "Agua caida") +
+  scale_fill_manual(values = c("salmon", "lightblue")) +
+  theme_minimal()
+
+
+###b (Normalidad)
+
+#Controles
+
+df_controles <- data.frame(x = nubes$CONTROLES)
+
+ggplot(df_controles, aes(x = x)) +
+  geom_histogram(aes(y = ..density..), 
+                 bins = 10,           
+                 fill = "lightblue", 
+                 color = "white") +
+  stat_function(fun = dnorm, 
+                args = list(mean = mean(df_controles$x), sd = sd(df_controles$x)), 
+                color = "red", size = 1.2,
+                xlim = c(min(df_controles$x), max(df_controles$x))) +
+  labs(title = "Histograma nubes controles + curva normal",
+       x = "Valores", 
+       y = "Densidad") +
+  theme_minimal()
+
+
+ggplot(df_controles, aes(sample = x)) +
+  stat_qq(color = "blue", size = 2) +           
+  stat_qq_line(color = "red", lwd = 1.2) +     
+  labs(title = "QQ-plot Controles",
+       x = "Cuantiles teóricos",
+       y = "Cuantiles muestrales") +
+  theme_minimal()
+
+
+
+#Tratadas
+
+df_tratadas <- data.frame(x = nubes$TRATADAS)
+
+ggplot(df_tratadas, aes(x = x)) +
+  geom_histogram(aes(y = ..density..), 
+                 bins = 10,           
+                 fill = "salmon", 
+                 color = "white") +
+  stat_function(fun = dnorm, 
+                args = list(mean = mean(df_tratadas$x), sd = sd(df_tratadas$x)), 
+                color = "red", size = 1.2) +
+  labs(title = "Histograma nubes tratadas + curva normal",
+       x = "Valores", 
+       y = "Densidad") +
+  theme_minimal()
+
+ggplot(df_tratadas, aes(sample = x)) +
+  stat_qq(color = "blue", size = 2) +           
+  stat_qq_line(color = "red", lwd = 1.2) +     
+  labs(title = "QQ-plot Tratadas",
+       x = "Cuantiles teóricos",
+       y = "Cuantiles muestrales") +
+  theme_minimal()
+
+
+#En los histogramas no parece que sean normales. Pero en los qq-plots en algunas zonas se pega a
+#recta.
+
+
+
+###c
+
+#Controles
+
+df_controlesLog <- log(df_controles)
+
+ggplot(df_controlesLog, aes(x = x)) +
+  geom_histogram(aes(y = ..density..), 
+                 bins = 10,           
+                 fill = "lightblue", 
+                 color = "white") +
+  stat_function(fun = dnorm, 
+                args = list(mean = mean(df_controlesLog$x), sd = sd(df_controlesLog$x)), 
+                color = "red", size = 1.2,
+                xlim = c(min(df_controlesLog$x), max(df_controlesLog$x))) +
+  labs(title = "Histograma nubes controlesLog + curva normal",
+       x = "Valores", 
+       y = "Densidad") +
+  theme_minimal()
+
+
+ggplot(df_controlesLog, aes(sample = x)) +
+  stat_qq(color = "blue", size = 2) +           
+  stat_qq_line(color = "red", lwd = 1.2) +     
+  labs(title = "QQ-plot ControlesLog",
+       x = "Cuantiles teóricos",
+       y = "Cuantiles muestrales") +
+  theme_minimal()
+
+
+#Tratadas
+
+df_tratadasLog <- log(df_tratadas)
+
+ggplot(df_tratadasLog, aes(x = x)) +
+  geom_histogram(aes(y = ..density..), 
+                 bins = 10,           
+                 fill = "lightblue", 
+                 color = "white") +
+  stat_function(fun = dnorm, 
+                args = list(mean = mean(df_tratadasLog$x), sd = sd(df_tratadasLog$x)), 
+                color = "red", size = 1.2,
+                xlim = c(min(df_tratadasLog$x), max(df_tratadasLog$x))) +
+  labs(title = "Histograma nubes tratadasLog + curva normal",
+       x = "Valores", 
+       y = "Densidad") +
+  theme_minimal()
+
+
+ggplot(df_tratadasLog, aes(sample = x)) +
+  stat_qq(color = "blue", size = 2) +           
+  stat_qq_line(color = "red", lwd = 1.2) +     
+  labs(title = "QQ-plot tratadasLog",
+       x = "Cuantiles teóricos",
+       y = "Cuantiles muestrales") +
+  theme_minimal()
+
+
+#Ahora con los datos transformados los histogramas se ajustan mas a una normal. Y los qq-plot
+#tienen un comportamiento parecido al de antes.
+
+##############################PREGUNTAR################################
+
+###d
+
+df_nubes$agua <- log(df_nubes$agua)
+
+ggplot(df_nubes, aes(x = tipoNube, y = agua, fill = tipoNube)) +
+  geom_boxplot() +
+  labs(title = "Boxplots paralelos nubes controladas y tratadas (log)",
+       x = "Tipo nube",
+       y = "log(agua caida)") +
+  scale_fill_manual(values = c("salmon", "lightblue")) +
+  theme_minimal()
 

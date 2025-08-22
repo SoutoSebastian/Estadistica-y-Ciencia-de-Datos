@@ -56,8 +56,12 @@ pie(table_rel_Embarazo,
 
 cont_SexoEmbarazo <- table(datos_bebes$Sexo, datos_bebes$Tipo_embarazo)
 
-barplot(cont_SexoEmbarazo[1,],
-        main = "Cantidad",
-        xlab = "Tipo de embarazo en mujeres",
+barplot(cont_SexoEmbarazo,
+        beside = TRUE,
+        legend = TRUE,
+        main = "Distribucion por Sexo y Tipo",
+        xlab = "Tipo de embarazo",
         ylab = "Frecuencia",
-        col = "pink") 
+        col = c("pink", "lightblue") )
+
+
