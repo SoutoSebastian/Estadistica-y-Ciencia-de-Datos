@@ -2,6 +2,7 @@
 
 library(ggplot2)
 library(tidyr)
+library(moments)
 
 
 ######Ejercicio 1.###########
@@ -576,4 +577,187 @@ ggplot(df_nubes, aes(x = tipoNube, y = agua, fill = tipoNube)) +
        y = "log(agua caida)") +
   scale_fill_manual(values = c("salmon", "lightblue")) +
   theme_minimal()
+
+
+#######Ejercicio 7##########
+
+############################PREGUNTAR################################
+
+data_credit <- read.csv("data_credit_card.csv")
+
+
+###a (Funcion de distribucion empírica)
+
+#purchases
+
+purchases <- data_credit$purchases
+df_purchases <- data.frame(purchases)
+
+ggplot(df_purchases, aes(purchases)) +
+  stat_ecdf(geom = "step") +
+  labs(title="Función de distribución empírica purchases", y="F(x)")
+
+#Continua
+
+#credit limit
+
+credit_limit <- data_credit$credit_limit
+df_credit_lim <- data.frame(credit_limit)
+
+ggplot(df_credit_lim, aes(credit_limit)) +
+  stat_ecdf(geom = "step") +
+  labs(title="Función de distribución empírica credit_limit", y="F(x)")
+
+#Discreta?
+
+#purchase freq
+
+purchases_freq <- data_credit$purchases_freq
+df_purchasesf <- data.frame(purchases_freq)
+
+ggplot(df_purchasesf, aes(purchases_freq)) +
+  stat_ecdf(geom = "step") +
+  labs(title="Función de distribución empírica purchases_freq", y="F(x)")
+
+#Discreta
+
+#tenure
+
+tenure <- data_credit$tenure
+df_tenure <- data.frame(tenure)
+
+ggplot(df_tenure, aes(tenure)) +
+  stat_ecdf(geom = "step") +
+  labs(title="Función de distribución empírica tenure", y="F(x)")
+
+#Discreta
+
+
+###b
+
+
+ggplot(df_credit_lim, aes(x = credit_limit)) +
+  geom_histogram(aes(y = ..density..), 
+                 bins = 10,           
+                 fill = "lightblue", 
+                 color = "white") +
+  labs(title = "Histograma credit_limit",
+       x = "Valores", 
+       y = "Densidad") +
+  theme_minimal()
+
+
+plot(density(df_credit_lim$credit_limit), main ="Grafico de densidad credit_limit", xlab = "credit_limit", ylab = "Densidad")
+
+#Para tenure no pues para modelar este caso se usa una variable discreta. 
+#Para purchase si me parece adecuado. 
+
+
+###c
+
+tenure_absoluta <- table(df_tenure)
+tenure_relativa <- prop.table(tenure_absoluta)
+
+
+barplot(tenure_relativa,
+        main = "Tenure",
+        xlab = "Meses restantes",
+        ylab = "Frecuencia",
+        col = c("pink", "lightblue","#77DD77", "#AEC6CF", "#CBAACB", "#FFB347", "#FFFACD"),
+)
+
+#Se observa que 12 es el valor que mas se repite entre los datos y los demás tienen una 
+#frecuencia baja y similar entre ellos.
+
+
+###d 
+
+for(var in names(data_credit)){
+  print(paste("Media", var, ":", mean(data_credit[[var]])))
+  print(paste("Mediana", var, ":", median(data_credit[[var]])))
+  print(paste("Media 0,1 podada", var, ":", mean(data_credit[[var]], trim = 0.1, na.rm = TRUE)))
+  print("")
+}
+
+###########################PREGUNTAR#####################
+  
+
+###e
+
+for(var in names(data_credit)){
+  print(paste("Cuantil 0.25", var, ":", quantile(data_credit[[var]], probs = 0.25)))
+  print(paste("Cuantil 0.75", var, ":", quantile(data_credit[[var]], probs = 0.75)))
+  print(paste("IQR", var, ":", IQR(data_credit[[var]])))
+  print(paste("MAD", var, ":", mad(data_credit[[var]])))
+  print("")
+}
+
+
+#purchases
+
+ggplot(df_purchases, aes(y = purchases)) +
+  geom_boxplot(fill = "lightblue", color = "black") +
+  labs(title = "Boxplot purchases", y = "Valores") +
+  theme_minimal()
+
+#parece un IQR chico pero es por los outliers tan grandes.
+
+#credit_limit
+
+ggplot(df_credit_lim, aes(y = credit_limit)) +
+  geom_boxplot(fill = "#77DD77", color = "black") +
+  labs(title = "Boxplot credit_limit", y = "Valores") +
+  theme_minimal()
+
+#varios outliers.
+
+#purchases_freq
+
+ggplot(df_purchasesf, aes(y = purchases_freq)) +
+  geom_boxplot(fill = "#CBAACB", color = "black") +
+  labs(title = "Boxplot purchases_freq", y = "Valores") +
+  theme_minimal()
+
+#no hay outliers, tiene sentido porque los datos no superan 1.
+
+
+#tenure
+
+ggplot(df_tenure, aes(y = tenure)) +
+  geom_boxplot(fill = "#FFFACD", color = "black") +
+  labs(title = "Boxplot tenure", y = "Valores") +
+  theme_minimal()
+
+#IQR = 0 , pues como se observo antes la gran mayoria de los datos se acumulan en el valor 12.
+
+
+
+###f 
+
+for(var in names(data_credit)){
+  print(paste("Desvio estandar", var, ":", sd(data_credit[[var]])))
+  print(paste("Coeficiente de asimetria", var, ":", skewness(data_credit[[var]])))
+  print(paste("Kurtosis", var, ":", kurtosis(data_credit[[var]])))
+  print("")
+}
+
+
+###g
+
+#Datos atipicos:
+#ya no puedo mas, pero calculo los bigotes y los que sea mas chicos o mas grandes son outliers.
+
+# Calcular cuartiles e IQR
+Q1 <- quantile(x, 0.25)
+Q3 <- quantile(x, 0.75)
+IQR <- Q3 - Q1
+
+limite_inf <- Q1 - 1.5*IQR
+limite_sup <- Q3 + 1.5*IQR
+
+# Identificar outliers
+outliers <- x[x < limite_inf | x > limite_sup]
+outliers
+
+#No deberian excluirse!
 
