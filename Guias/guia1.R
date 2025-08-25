@@ -3,9 +3,9 @@
 library(ggplot2)
 library(tidyr)
 library(moments)
+library(readxl)
 
-
-######Ejercicio 1.###########
+######Ejercicio 1###########
 
 Debernardi <- read.csv(
   "Debernardi.csv"
@@ -760,4 +760,288 @@ outliers <- x[x < limite_inf | x > limite_sup]
 outliers
 
 #No deberian excluirse!
+
+
+#####Ejercicio 8##########
+
+ciclocombinado <- read_excel("ciclocombinado.xlsx")
+
+###a
+
+PE <- ciclocombinado$PE
+df_PE <- data.frame(PE)
+
+
+ggplot(df_PE, aes(x = PE)) +
+  geom_histogram(aes(y = ..density..), 
+                 bins = 10,           
+                 fill = "#FFB347", 
+                 color = "white") +
+  labs(title = "Histograma PE(MW)",
+       x = "Valores", 
+       y = "Densidad") +
+  theme_minimal()
+
+plot(density(PE), main ="Grafico de densidad PE", xlab = "PE(MW)", ylab = "Densidad", col = "#FFB347")
+
+
+#Se observan dos picos en 440 aprox y 450. Y un rango entre 420 y 500.
+
+
+###b
+
+#temp > 20.
+
+mayorA20 <- ciclocombinado[ciclocombinado$HighTemp == 1, 1]
+plot(density(mayorA20$PE), main ="Grafico de densidad PE (HighTemp > 20)", xlab = "PE(MW)", ylab = "Densidad", col = "#77DD77")
+
+#temp < 20.
+
+menorA20 <- ciclocombinado[ciclocombinado$HighTemp == 0, 1]
+plot(density(menorA20$PE), main ="Grafico de densidad PE (HighTemp < 20)", xlab = "PE(MW)", ylab = "Densidad", col = "salmon")
+
+
+#Grafico juntos:
+
+plot(density(mayorA20$PE), main ="Grafico de densidad PE", xlab = "PE(MW)",
+     ylab = "Densidad",col = "#77DD77", xlim = c(420,500))
+lines(density(menorA20$PE), xlab = "PE(MW)",
+      ylab = "Densidad",col = "salmon", add = TRUE)
+legend("topright", legend = c("HighTemp > 20", "HighTemp < 20"),
+       col = c("#77DD77", "salmon"), lwd = 2)
+
+#Se observa que la primer "montaña" de la densidad estimada para los datos corresponde a los
+#dias en la que la temperatura promedio mas de 20 grados y la segunda a los dias en que se
+#promedio menos de 20 grados. Es decir, cuando hubo menor se temperatura se entrego mas potencia.
+
+
+###c
+
+mayorA20$PE < 300
+mean(mayorA20$PE < 300)
+
+#no hay ningun dato de HighTemp = 1 que cumpla que PE < 300
+
+mean(menorA20$PE < 450)
+
+
+###d
+mean(ciclocombinado$PE < 450)
+
+
+###e
+#Uso cuantil 0.10, el 90% de los datos esta por delante.
+
+pe_min <- quantile(mayorA20$PE, probs = 0.10)
+
+###f
+
+pe_min <- quantile(ciclocombinado$PE, probs = 0.10)
+
+###################PREGUNTAR########################
+
+
+
+#####Ejercicio 9######
+
+
+###a
+
+#Diagnosis = 1.
+
+datos_diag1 <- Debernardi[Debernardi$diagnosis == 1, ]
+
+ggplot(datos_diag1, aes(x = LYVE1)) +
+  geom_histogram(aes(y = ..density..), 
+                 bins = 10,           
+                 fill = "#CBAACB", 
+                 color = "white") +
+  labs(title = "Histograma LYVE1 (diag = 1)",
+       x = "Valores", 
+       y = "Densidad") +
+  theme_minimal()
+
+#la gran mayoria de datos se encuentra en el primer bin con valores entre 0 y 0.9 aprox
+#y los demas se distribuyen hacia adelante.
+
+
+#Diagnosis = 2
+
+datos_diag2 <- Debernardi[Debernardi$diagnosis == 2, ]
+
+ggplot(datos_diag2, aes(x = LYVE1)) +
+  geom_histogram(aes(y = ..density..), 
+                 bins = 10,           
+                 fill = "#FFB347", 
+                 color = "white") +
+  labs(title = "Histograma LYVE1 (diag = 2)",
+       x = "Valores", 
+       y = "Densidad") +
+  theme_minimal()
+
+#En este caso la gran mayoria de datos se encuentra distribuida en los primeros 4 bins.
+
+
+#Diagnosis = 3.
+
+datos_diag3 <- Debernardi[Debernardi$diagnosis == 3, ]
+
+ggplot(datos_diag3, aes(x = LYVE1)) +
+  geom_histogram(aes(y = ..density..), 
+                 bins = 8,           
+                 fill = "#AEC6CF", 
+                 color = "white") +
+  labs(title = "Histograma LYVE1 (diag = 3)",
+       x = "Valores", 
+       y = "Densidad") +
+  theme_minimal()
+
+#Para diagnosis = 3 cambia rotundamente la forma del histograma. La mayoria de los datos no 
+#se encuentra al comienzo, sino en valores del rango entre 3 y 8 aproximandamente. Y se
+#puede obsevar un outlier.
+
+
+###b
+
+
+ggplot() +
+  stat_ecdf(data = datos_diag1, aes(x = LYVE1, color = "Grupo 1"), geom = "step") +
+  stat_ecdf(data = datos_diag2, aes(x = LYVE1, color = "Grupo 2"), geom = "step") +
+  stat_ecdf(data = datos_diag3, aes(x = LYVE1, color = "Grupo 3"), geom = "step") +
+  labs(
+    title = "Funciones de distribución empírica LYVE1",
+    x = "LYVE1",
+    y = "F(x)",
+    color = "Grupo"
+  ) +
+  theme_minimal()
+
+#“los valores de la variable LYVE1
+#tienden a ser mas altos entre quienes tienen cancer de pancreas que entre quienes sufren
+#otras enfermedades asociadas al pancreas”
+
+
+#Es verdadero. Pues los datos correspondientes a diag = 3 demuestran niveles de LYVE1 más altos
+#que para diagnosis 1 o 2. Esto se puede observar en la distribucion empírica, pues la linea
+#del grupo 3 esta pr debajo de las demas, eso quiere decir que para cada valor la proba de que
+#LYVE1 sea menor a ese valor es mayor para los grupos 1 y 2.
+
+
+
+###c
+
+#Diagnosis = 1.
+
+ggplot(Debernardi, aes(x = diagnosis, y = LYVE1, fill = sex)) +
+  geom_boxplot() +
+  labs(title = "Boxplots paralelos LYVE1 según diagnosis y diferenciando sexo",
+       x = "diagnosis",
+       y = "LYVE1") +
+  scale_fill_manual(values = c("pink", "lightblue")) +
+  theme_minimal()
+
+ggplot(Debernardi, aes(x = factor(diagnosis), y = LYVE1, fill = factor(sex))) +
+  geom_boxplot(position = position_dodge(width = 0.8)) +
+  labs(title = "Boxplots paralelos LYVE1 según diagnosis y sexo",
+       x = "Diagnosis",
+       y = "LYVE1") +
+  scale_fill_manual(values = c("pink", "lightblue"),
+                    name = "Sexo",
+                    labels = c("Mujer", "Hombre")) +
+  theme_minimal()
+
+
+#Parece que para las categoria de diagnosis 1 y 2 parece que el nivel de LYVE1 es mayor en
+#hombres. Pero, para las personas que tienen cáncer de páncreas, el nivel de LYVE1 aumenta
+#y es similar en ambos sexos.
+
+
+###d
+
+plot(density(datos_diag1$LYVE1), main ="Grafico de densidad LYVE1", xlab = "LYVE1(ng/ml)",
+     ylab = "Densidad",col = "#CBAACB", xlim= c(-1,18))
+lines(density(datos_diag2$LYVE1), xlab = "LYVE1(ng/ml)",
+      ylab = "Densidad",col = "#FFB347", add = TRUE)
+lines(density(datos_diag3$LYVE1), xlab = "LYVE1(ng/ml)",
+      ylab = "Densidad",col = "#AEC6CF", add = TRUE)
+legend("topright", legend = c("Diag = 1", "Diag = 2", "Diag = 3"),
+       col = c("#CBAACB", "#FFB347", "#AEC6CF"), lwd = 2)
+
+#Se puede observar como las densidades correspondientes a diagnosis 1 y 2 tienen un pico
+#en los valores mas chicos y luego se acercan al 0. Mientras que la densidad correspondiente
+#a diag 3 no tiene picos como las otras pero se extiende hasta el valor 15 aproximandamente.
+
+
+
+###e
+
+#Primero a:
+
+#Diagnosis = 1.
+
+df1log <- data.frame(LYVE1 = log(Debernardi$LYVE1[Debernardi$diagnosis == 1]))
+
+
+
+ggplot(df1log, aes(x = LYVE1)) +
+  geom_histogram(aes(y = ..density..), 
+                 bins = 10,           
+                 fill = "#CBAACB", 
+                 color = "white") +
+  labs(title = "Histograma log(LYVE1) (diag = 1)",
+       x = "Valores", 
+       y = "Densidad") +
+  theme_minimal()
+
+
+#Diagnosis = 2
+
+df2log <- data.frame(LYVE1 = log(Debernardi$LYVE1[Debernardi$diagnosis == 2]))
+
+ggplot(df2log, aes(x = LYVE1)) +
+  geom_histogram(aes(y = ..density..), 
+                 bins = 10,           
+                 fill = "#FFB347", 
+                 color = "white") +
+  labs(title = "Histograma log(LYVE1) (diag = 2)",
+       x = "Valores", 
+       y = "Densidad") +
+  theme_minimal()
+
+
+
+#Diagnosis = 3.
+
+df3log <- data.frame(LYVE1 = log(Debernardi$LYVE1[Debernardi$diagnosis == 3]))
+
+ggplot(df3log, aes(x = LYVE1)) +
+  geom_histogram(aes(y = ..density..), 
+                 bins = 8,           
+                 fill = "#AEC6CF", 
+                 color = "white") +
+  labs(title = "Histograma log(LYVE1) (diag = 3)",
+       x = "Valores", 
+       y = "Densidad") +
+  theme_minimal()
+
+
+#En los primeros dos se observan dos grupos. Pero para diag = 3, se juntan los datos unicamente
+#en valores positivos.
+
+
+#Ahora d:
+
+plot(density(df1log$LYVE1), main ="Grafico de densidad log(LYVE1)", xlab = "log(LYVE1) (ng/ml)",
+     ylab = "Densidad",col = "#CBAACB", xlim= c(-8,5), ylim = c(0, 0.7))
+lines(density(df2log$LYVE1), xlab = "log(LYVE1) (ng/ml)",
+      ylab = "Densidad",col = "#FFB347", add = TRUE)
+lines(density(df3log$LYVE1), xlab = "log(LYVE1) (ng/ml)",
+      ylab = "Densidad",col = "#AEC6CF", add = TRUE)
+legend("topright", legend = c("Diag = 1", "Diag = 2", "Diag = 3"),
+       col = c("#CBAACB", "#FFB347", "#AEC6CF"), lwd = 2)
+
+
+#Se observa como 1 y 2 se extienden en los negativos y 3 unicamente en los positivos con
+#un pico notorio.
+
 
