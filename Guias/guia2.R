@@ -421,3 +421,87 @@ ggplot(tormentas, aes(x = V1)) +
 #Se observa que las estimaciones de momentos y maxima verosimilitud son similares y se ajustan
 #bien a la densidad empirica. Por lo tanto, se podría confirmar que estos datos se distribuyen
 #como una gamma. 
+
+
+######Estimacion de la densidad########
+
+
+######Ejercicio 21#######
+
+cpu <- scan("cpu.txt")
+
+n <- length(cpu)
+s <- sd(cpu)
+iqr <- IQR(cpu)
+hsil <- 1.06 * min(s,iqr/1.349) * n^(-1/5)
+
+
+plot(density(cpu, bw = hsil, kernel = "gaussian"),
+     main = "Gráfico de densidades con hsil y h default", col = "blue")
+
+lines(density(cpu, kernel = "gaussian"), col = "red")
+
+legend("topleft",
+       legend = c("hsil", "h default"),
+       col = c("blue", "red"),
+       lwd = 1,
+       cex = 0.5) 
+
+
+######Ejercicio 22######
+
+Debernardi <- read.csv(
+  "Debernardi.csv"
+)
+
+#a
+
+#1
+datos <- Debernardi[Debernardi$diagnosis == "1",]$LYVE1
+n1 <- length(datos)
+s1 <- sd(datos)
+iqr1 <- IQR(datos)
+hsil1 <- 1.06 * min(s1,iqr1/1.349) * n1^(-1/5)
+
+#2
+datos2 <- Debernardi[Debernardi$diagnosis == "2",]$LYVE1
+n2 <- length(datos2)
+s2 <- sd(datos2)
+iqr2 <- IQR(datos2)
+hsil2 <- 1.06 * min(s2,iqr2/1.349) * n^(-1/5)
+
+#3
+datos3 <- Debernardi[Debernardi$diagnosis == "3",]$LYVE1
+n3<- length(datos3)
+s3 <- sd(datos3)
+iqr3 <- IQR(datos3)
+hsil3 <- 1.06 * min(s3,iqr3/1.349) * n^(-1/5)
+
+
+#b
+
+plot(density(datos, bw = hsil1, kernel = "gaussian"),
+     main = "Gráfico de densidades para LYVE1 segun diagnosis con hsil", col = "blue")
+
+lines(density(datos2, kernel = "gaussian"), col = "red")
+lines(density(datos3, kernel = "gaussian"), col = "green")
+
+legend("topleft",
+       legend = c("1", "2", "3"),
+       col = c("blue", "red","green"),
+       lwd = 1,
+       cex = 0.5) 
+
+
+#c
+plot(density(datos, bw = hsil1, kernel = "epanechnikov"),
+     main = "Densidades para LYVE1 segun diagnosis con hsil (epanechnikov)", col = "blue")
+
+lines(density(datos2, kernel = "epanechnikov"), col = "red")
+lines(density(datos3, kernel = "epanechnikov"), col = "green")
+
+legend("topleft",
+       legend = c("1", "2", "3"),
+       col = c("blue", "red","green"),
+       lwd = 1,
+       cex = 0.5) 
