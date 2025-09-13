@@ -505,3 +505,112 @@ legend("topleft",
        col = c("blue", "red","green"),
        lwd = 1,
        cex = 0.5) 
+
+
+########Ejercicio 19########
+
+
+##i
+
+#A
+n <- 10
+tita0 <- 1
+
+mA <- runif(n, 0, tita0)
+
+titaMV <- max(mA)
+titaM <- 2*mean(mA)
+
+
+#B
+eps <- 0.01
+
+CondicionMv <- abs(titaMV - tita0) < eps 
+CondicionM <- abs(titaM - tita0) < eps 
+
+#C
+k <- 1000
+
+pmom <- numeric(k)
+pemv <- numeric(k)
+
+for (i in 1:k){
+  mA <- runif(n, 0, tita0)
+  titaMV <- max(mA)
+  titaM <- 2*mean(mA)
+  
+  pmom[i] <- titaM
+  pemv[i] <- titaMV
+}
+
+
+probaMOM <- sum(abs(pmom - tita0) < eps) / 1000
+probaEMV <- sum(abs(pemv - tita0) < eps) / 1000
+
+##ii
+
+ns <- c(100, 500, 1000, 2000, 5000, 10000, 100000)
+
+resultados <- list()
+proabilidades <- list()
+
+for (n in ns) {
+  simulaciones <- replicate (k, {
+    muestra <- runif( n, 0, tita0)
+    c(MV  = max(muestra),
+      MOM = 2 * mean(muestra))
+  })
+  
+  resultados[[paste0("n=", n)]] <- list(
+    theta_MV  = simulaciones["MV", ],
+    theta_mom = simulaciones["MOM", ]
+  )
+  
+  probaEMV <- mean(abs(simulaciones["MV", ]  - tita0) < eps)
+  probaMOM <- mean(abs(simulaciones["MOM", ] - tita0) < eps)
+  
+  proabilidades[[paste0("n=", n)]] <- list(
+    probaEMV = probaEMV,
+    probaMOM = probaMOM
+  )
+}
+
+#EL de maxima verosimilitud, se ve como converge mas rapido que el otro y coincide con 
+#lo calculado anteriormente y si coincide con lo del ejecicio 10.
+
+
+##iii
+
+#Maxima Verosimilitud:
+
+#P( |titaMv - tita| < eps ) = P(titaMv - tita < eps) = P(n(titaMv - tita) < n.eps)
+# y esto se parece a P(X < n.eps) con X exp(1/tita).
+
+distAsintMV <- list()
+
+for (n in ns){
+  p <- pexp(n*eps, rate = 1/tita0)
+  
+  distAsintMV[[paste0("n=",n)]] <- p
+}
+
+#es muy parecido a lo calculado anteriormente.
+
+#Momentos:
+
+#P( |titaM - tita| < eps ) = P( -eps < titaM - tita < eps ) = 
+#P( raiz(n)(-eps) < raiz(n) * (titaM - tita) < raiz(n).eps ) = 
+#y esto se parece a una normal(0,tita^2/3)
+#phi(raiz(n).eps) - phi(raiz(n).(-eps))
+
+
+distAsintM <- list()
+
+for (n in ns){
+  sd_lim <- tita0 / sqrt(3)
+  p <- pnorm(sqrt(n)*eps, mean = 0, sd = sd_lim) - pnorm(-sqrt(n)*eps, mean = 0, sd = sd_lim)
+  
+  distAsintM[[paste0("n=",n)]] <- p
+}
+
+#Tambien se ve muy parecido.
