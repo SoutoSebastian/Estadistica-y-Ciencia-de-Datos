@@ -13,7 +13,7 @@ prom <- mean(datos)
 
 S <- sd(datos)
 
-cuantil <- qt(1-0.25, n-1)
+cuantil <- qt(1-0.025, n-1)
 termino <- cuantil * S/sqrt(n)
 intervalo <- c(prom -termino, prom + termino)
 
@@ -29,6 +29,10 @@ der <- (24*S^2)/cuantil1
 intervalob = c(izq,der)
 
 #c
+
+
+
+intervaloc <- exp(-intervalo)
 
 
 
