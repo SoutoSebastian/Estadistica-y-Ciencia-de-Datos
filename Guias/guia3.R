@@ -171,5 +171,62 @@ for (nname in names(resultados)) {
 
 
 
+########EJ 12#########
+
+#a
+n1 <- 15
+n2 <- 20
+
+A <- c(250,252,245,258,240,247,251,249,250,243,247,260,238,241,239)
+B <- c(330,335,327,329,320,332,337,328,334,326,331,332,328,329,337,341,336,338,325,321)
+
+t.test(A, B, var.equal = TRUE, conf.level = 0.99)$conf.int
+
+#c
+s1 <- sd(A)
+s2 <- sd(B)
+
+quantil1 <- qchisq(1-0.005, 33)
+quantil2 <- qchisq(0.005,33)
+
+num <- s1^2*(n1-1) + s2^2*(n2-1)
+izq <- num / quantil1
+der <- num / quantil2
+
+intervalo <- c(izq,der)
+
+#d
+
+s1 <- sd(A)
+s2 <- sd(B)
+
+quantil1 <- qchisq(1-0.05, 33)
+quantil2 <- qchisq(0.05,33)
+
+num <- s1^2*(n1-1) + s2^2*(n2-1)
+izq <- sqrt(num / quantil1)
+der <- sqrt(num / quantil2)
+
+intervalo <- c(izq,der)
 
 
+########Ej 13#############
+
+A <- c(41, 37, 36, 39, 44, 42, 38, 37, 35, 32, 39, 30, 40, 41, 37)
+
+B <- c(39, 35.3, 33.5, 36, 42.5, 38, 36, 34.8, 33.2, 29, 29, 36.6, 28.4, 38.5, 39)
+
+Z <- A - B
+
+
+prom <- mean(Z)
+sZ <- sd(Z)
+n <- length(Z)
+
+cuantil <- qt(1-0.025,14)
+
+termino <- cuantil * (sZ/sqrt(n))
+izq <- prom - termino
+der <- prom + termino 
+
+intervalo <- c(izq, der)
