@@ -54,13 +54,7 @@ intervaloc <- c(izq, der)
 
 ######EJ 11####
 
-n
-p
-
-ma <- rbinom(n, 1, p)
-
-
-intervalo1 <- function(nivel, datos){
+metodo1 <- function(nivel, datos){
   cuantil <- qnorm(1 - (1-nivel)/2)
   prom <- mean (datos)
   n <- length(datos)
@@ -70,7 +64,111 @@ intervalo1 <- function(nivel, datos){
   der = prom + termino
   
   return(c(izq,der))
+}
+
+resolvente <- function(a,b,c){
+  raiz <- sqrt(b^2-4*a*c)
+  x1 <- (-b + raiz)/(2*a)
+  x2 <- (-b - raiz)/(2*a)
+  return(sort(c(x1, x2)))
+}
+
+
+metodo2 <- function(nivel, datos){
+  cuantil <- qnorm(1 - (1-nivel)/2)
+  prom <- mean(datos)
+  n <- length(datos)
+  
+  a <- 1 + (cuantil^2)/n
+  b <- -2*prom - (cuantil^2)/n
+  c <- prom ^2
+  
+  return(resolvente(a,b,c))
+}
+
+
+
+k <- 2000
+
+ns <- c(20, 50, 100)
+ps<- c(0.10, 0.50)
+
+resultados <- list()
+
+for (n in ns){
+  resultados[[paste0("n =", n)]] <- list()
+  
+  for (p in ps){
+    intervalos1 <- vector("list",k)
+    intervalos2 <- vector("list",k)
+    
+    long1 <- vector("numeric", k)
+    long2 <- vector("numeric", k)
+    
+    cubre1 <- vector("numeric", k)
+    cubre2 <- vector("numeric", k)
+    
+    for (i in 1:k){
+      ma <- rbinom(n,1,p)
+      
+      intervalo1 <- metodo1(0.95, ma)
+      l1 <- intervalo1[2] - intervalo1[1]
+      intervalos1[[i]] <- intervalo1
+      long1[i] <- l1
+      cubre1[i] <- intervalo1[1] <= p && p <= intervalo1[2]
+      
+      intervalo2 <- metodo2(0.95, ma)
+      l2 <- intervalo2[2] - intervalo2[1]
+      intervalos2[[i]] <- intervalo2
+      long2[i] <- l2
+      cubre2[i] <- intervalo2[1] <= p && p <= intervalo2[2]
+      
+    }
+    
+    resultados[[paste0("n =", n)]][[paste0("p =", p)]] <- list(
+      ic1 = intervalos1,
+      ic2 = intervalos2,
+      l1 = long1,
+      l2 = long2,
+      c1 = cubre1,
+      c2 = cubre2
+    )
   }
+}
+
+
+
+#ITEMS A Y B
+
+
+# Inicializamos el data.frame para resultados resumidos
+summary_results <- data.frame()
+
+for (nname in names(resultados)) {
+  for (pname in names(resultados[[nname]])) {
+    res <- resultados[[nname]][[pname]]
+    
+    # longitud esperada
+    mean_len1 <- mean(res$l1)
+    mean_len2 <- mean(res$l2)
+    
+    # cubrimiento empírico
+    cover1 <- mean(res$c1)
+    cover2 <- mean(res$c2)
+    
+    # extraer valores numéricos de los nombres
+    n_val <- as.numeric(gsub("[^0-9]", "", nname))
+    p_val <- as.numeric(gsub("[^0-9\\.]", "", pname))
+    
+    summary_results <- rbind(summary_results,
+                             data.frame(n = n_val, p = p_val,
+                                        mean_len1 = mean_len1,
+                                        mean_len2 = mean_len2,
+                                        cover1 = cover1,
+                                        cover2 = cover2))
+  }
+}
+
 
 
 
