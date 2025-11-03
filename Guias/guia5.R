@@ -333,6 +333,7 @@ U_obs <- 10*S2/49
 p_val <- pchisq(U_obs,10)
 
 
+#4.5
 sa <- 2.76
 sb <- 1.92
 xa <- 6.84
@@ -347,4 +348,15 @@ pval <- 2 * pt(Tobs, 110, lower.tail = FALSE)
 
 limInf<- xa - xb - qt(0.005, 110, lower.tail = FALSE) * sqrt(sp2 *(1/na + 1/nb))
 limSup<- xa - xb + qt(0.005, 110, lower.tail = FALSE) * sqrt(sp2 *(1/na + 1/nb)) 
+
+
+#4.6
+p0 <- 0.92
+xRaya <- 118/130
+
+tobs <- sqrt(130) *(xRaya - p0)/sqrt(p0*(1-p0))
+
+pVal <- pnorm(tobs)
+
+nmin <- ((-1.645) * sqrt(p0*(1-p0))/(-0.01))^2
 
