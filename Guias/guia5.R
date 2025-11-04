@@ -334,20 +334,20 @@ p_val <- pchisq(U_obs,10)
 
 
 #4.5
-sa <- 2.76
-sb <- 1.92
-xa <- 6.84
-xb <- 7.81
-na <- 55
-nb <- 57
+sa <- 2.86
+sb <- 2.22
+xa <- 7.32
+xb <- 8.26
+na <- 66
+nb <- 66
 
-sp2 <- ((2.76)^2 * 54 + (1.92^2)*56) / (55+57-2)
+sp2 <- ((2.86)^2 * 65 + (2.22^2)*65) / (66+66-2)
 
 Tobs <- abs(xa - xb)/(sqrt(sp2*(1/na + 1/nb)))
-pval <- 2 * pt(Tobs, 110, lower.tail = FALSE)
+pval <- 2 * pnorm(Tobs,0,1, lower.tail = FALSE)
 
-limInf<- xa - xb - qt(0.005, 110, lower.tail = FALSE) * sqrt(sp2 *(1/na + 1/nb))
-limSup<- xa - xb + qt(0.005, 110, lower.tail = FALSE) * sqrt(sp2 *(1/na + 1/nb)) 
+limInf<- xa - xb - qnorm(0.005,0,1, lower.tail = FALSE) * sqrt(sp2 *(1/na + 1/nb))
+limSup<- xa - xb + qnorm(0.005,0,1, lower.tail = FALSE) * sqrt(sp2 *(1/na + 1/nb)) 
 
 
 #4.6
